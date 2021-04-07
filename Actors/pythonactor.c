@@ -157,12 +157,12 @@ int python_init()
 
 const char * pythonactorcapabilities =
         "capabilities\n"
-        "    data\n"
-        "        name = \"pyfile\"\n"
+        "    pyfile\n"
         "        type = \"filename\"\n"
         "        value = \"\"\n"
         "        api_call = \"SET FILE\"\n"
         "        api_value = \"s\"\n"           // optional picture format used in zsock_send
+        "        options = \"textedit,ext=*.py\"\n"
         "inputs\n"
         "    input\n"
         "        type = \"OSC\"\n"

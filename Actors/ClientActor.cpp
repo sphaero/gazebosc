@@ -4,20 +4,17 @@
 
 const char * clientCapabilities =
                                 "capabilities\n"
-                                "    data\n"
-                                "        name = \"name\"\n"
+                                "    name\n"
                                 "        type = \"string\"\n"
                                 "        value = \"default\"\n"
                                 "        api_call = \"SET NAME\"\n"
                                 "        api_value = \"s\"\n"
-                                "    data\n"
-                                "        name = \"ip\"\n"
+                                "    ip\n"
                                 "        type = \"string\"\n"
                                 "        value = \"192.168.0.1\"\n"
                                 "        api_call = \"SET HOST\"\n"
                                 "        api_value = \"s\"\n"           // optional picture format used in zsock_send
-                                "    data\n"
-                                "        name = \"port\"\n"
+                                "    port\n"
                                 "        type = \"int\"\n"
                                 "        value = \"6200\"\n"
                                 "        min = \"1\"\n"

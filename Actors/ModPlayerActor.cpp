@@ -9,14 +9,12 @@ static void mixaudio(void *userdata, Uint8 *stream, int len)
 
 const char * modplayercapabilities =
         "capabilities\n"
-        "    data\n"
-        "        name = \"modfile\"\n"
+        "    modfile\n"
         "        type = \"filename\"\n"
         "        value = \"\"\n"
         "        api_call = \"SET MOD\"\n"
         "        api_value = \"s\"\n"           // optional picture format used in zsock_send
-        "    data\n"
-        "        name = \"playback\"\n"
+        "    playback\n"
         "        type = \"mediacontrol\"\n"
         "outputs\n"
         "    output\n"

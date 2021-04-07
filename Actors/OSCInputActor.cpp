@@ -3,8 +3,7 @@
 
 const char * oscInputCapabilities =
         "capabilities\n"
-        "    data\n"
-        "        name = \"port\"\n"
+        "    port\n"
         "        type = \"int\"\n"
         "        value = \"6200\"\n"
         "        min = \"1\"\n"

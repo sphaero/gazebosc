@@ -14,6 +14,9 @@
 // actor file browser
 imgui_addons::ImGuiFileBrowser actor_file_dialog;
 
+// used in stage
+bool txteditor_open = false;
+
 /// A structure defining a connection between two slots of two actors.
 struct Connection
 {
@@ -39,6 +42,7 @@ struct Connection
         return !operator ==(other);
     }
 };
+
 
 enum GActorSlotTypes
 {
@@ -98,8 +102,9 @@ struct ActorContainer {
         zconfig_t *root = zconfig_locate(this->capabilities, "capabilities");
         if ( root == NULL ) return;
 
-        zconfig_t *data = zconfig_locate(root, "data");
-        while( data != NULL ) {
+        zconfig_t *data = zconfig_child(root);
+        while( data  )
+        {
             HandleAPICalls(data);
             data = zconfig_next(data);
         }
@@ -193,14 +198,12 @@ struct ActorContainer {
         zconfig_t *root = zconfig_locate(this->capabilities, "capabilities");
         if ( root == NULL ) return;
 
-        zconfig_t *data = zconfig_locate(root, "data");
+        zconfig_t *data = zconfig_child(root);
         while( data != NULL ) {
-            zconfig_t *name = zconfig_locate(data, "name");
             zconfig_t *type = zconfig_locate(data, "type");
-            assert(name);
             assert(type);
 
-            char* nameStr = zconfig_value(name);
+            char* nameStr = zconfig_name(data);
             char* typeStr = zconfig_value(type);
             if ( streq(typeStr, "int")) {
                 RenderInt( nameStr, data );
@@ -395,6 +398,25 @@ struct ActorContainer {
             zconfig_set_value(zvalue, "%s", actor_file_dialog.selected_path.c_str() );
             strcpy(buf, actor_file_dialog.selected_path.c_str());
             SendAPI<char*>(zapic, zapiv, zvalue, &(p) );
+        }
+        // TODO: handle options
+        if ( zconfig_locate(data, "options") )
+        {
+            if ( ImGui::Button(ICON_FA_EDIT) )
+            {
+                zconfig_t * zvalue = zconfig_locate(data, "value");
+                const char* zvalueStr = zconfig_value(zvalue);
+                zfile_t *f = zfile_new(nullptr, zvalueStr);
+                if ( strlen(zvalueStr) && f )
+                {
+                    int rc = zfile_input(f);
+                    assert(rc == 0);
+                    zchunk_t *source = zfile_read( f, 0, zfile_cursize(f) );
+                    txteditor_open = true;
+                }
+                else
+                    zsys_error("no valid file to load: %s", zvalueStr);
+            }
         }
     }
 

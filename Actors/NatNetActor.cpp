@@ -12,13 +12,13 @@ std::vector<MarkerSetDescription> NatNet::markerset_descs;
 
 const char * natnetCapabilities =
                                 "capabilities\n"
-                                "    data\n"
+                                "    motive_ip\n"
                                 "        name = \"motive_ip\"\n"
                                 "        type = \"string\"\n"
                                 "        value = \"192.168.10.30\"\n"
                                 "        api_call = \"SET HOST\"\n"
                                 "        api_value = \"s\"\n"           // optional picture format used in zsock_send
-                                "    data\n"
+                                "    sendTimeout\n"
                                 "        name = \"sendTimeout\"\n"
                                 "        type = \"int\"\n"
                                 "        value = \"60\"\n"

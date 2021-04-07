@@ -3,8 +3,7 @@
 
 const char * pulseCapabilities =
                                 "capabilities\n"
-                                "    data\n"
-                                "        name = \"timeout\"\n"
+                                "    timeout\n"
                                 "        type = \"int\"\n"
                                 "        value = \"1000\"\n"
                                 "        min = \"1\"\n"
@@ -12,14 +11,14 @@ const char * pulseCapabilities =
                                 "        step = \"1\"\n"
                                 "        api_call = \"SET TIMEOUT\"\n"
                                 "        api_value = \"i\"\n"           // optional picture format used in zsock_send
-                                "    data\n"
+                                "    someFloat\n"
                                 "        name = \"someFloat\"\n"
                                 "        type = \"float\"\n"
                                 "        value = \"1.0\"\n"
                                 "        min = \"0\"\n"
                                 "        max = \"10\"\n"
                                 "        step = \"0\"\n"
-                                "    data\n"
+                                "    someText\n"
                                 "        name = \"someText\"\n"
                                 "        type = \"string\"\n"
                                 "        value = \"Hello world!\"\n"
