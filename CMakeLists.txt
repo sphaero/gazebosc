@@ -163,6 +163,7 @@ list(APPEND GZB_SOURCES
     ImNodes.cpp
     ImNodesEz.cpp
     ext/ImGui-Addons/FileBrowser/ImGuiFileBrowser.cpp
+    ext/ImGuiColorTextEdit/TextEditor.cpp
     stage.cpp
 )
 
@@ -175,6 +176,7 @@ list(APPEND GZB_INCLUDEDIRS
     ${CMAKE_CURRENT_BINARY_DIR}/imgui-${DEP_IMGUI_VERSION}
     ${CMAKE_CURRENT_BINARY_DIR}/imgui-${DEP_IMGUI_VERSION}/examples
     ${CMAKE_CURRENT_BINARY_DIR}/imgui-${DEP_IMGUI_VERSION}/examples/libs/gl3w
+    ext/ImGuiColorTextEdit/
 )
 
 if(WIN32)

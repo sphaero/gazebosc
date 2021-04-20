@@ -19,3 +19,6 @@
 [submodule "ext/openvr"]
 	path = ext/openvr
 	url = https://github.com/ValveSoftware/openvr
+[submodule "ext/ImGuiColorTextEdit"]
+	path = ext/ImGuiColorTextEdit
+	url = https://github.com/BalazsJako/ImGuiColorTextEdit.git
