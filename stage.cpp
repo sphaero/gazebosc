@@ -58,12 +58,20 @@ imgui_addons::ImGuiFileBrowser file_dialog;
 std::string editingFile = "";
 std::string editingPath = "";
 
+// Text editor instance
+bool showEditor = true;
+struct textfile {
+    zfile_t *file;
+    zchunk_t *data;
+};
+std::vector<textfile> open_text_files;
+
 bool Save( const char* configFile );
 bool Load( const char* configFile );
 void Clear();
 ActorContainer* Find( const char* endpoint );
 
-bool showEditor = true;
+// ImGui Demo window for dev purposes
 bool showDemo = false;
 void ImGui::ShowDemoWindow(bool* p_open);
 
@@ -163,6 +171,31 @@ void ShowConfigWindow(bool * showLog) {
 
 #include "TextEditor.h"
 
+bool OpenTextEditor(zfile_t *txtfile)
+{
+    assert(txtfile);
+    bool found = false;
+    for(auto it = open_text_files.begin(); it != open_text_files.end(); ++it)
+    {
+        if ( streq( zfile_filename((*it).file, NULL), zfile_filename((*it).file, NULL) ) )
+        {
+            found = true;
+            break; // file already exists in the editor
+        }
+    }
+    if ( ! found )
+    {
+        // we own the pointer now!
+        int rc = zfile_input(txtfile);
+        assert(rc == 0);
+        zchunk_t *data = zfile_read( txtfile, zfile_cursize(txtfile), 0 );
+        open_text_files.push_back( { txtfile, data } );
+    }
+    //else
+        // todo?
+    showEditor = true;
+}
+
 void ShowColorTextEditor()
 {
     static TextEditor editor;
@@ -233,28 +266,28 @@ void ShowColorTextEditor()
         ImGui::EndMenuBar();
     }
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+
     if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
     {
-        if (ImGui::BeginTabItem("Avocado"))
+        for(auto it = open_text_files.begin(); it != open_text_files.end(); ++it)
         {
-            ImGui::Text("This is the Avocado tab!\nblah blah blah blah blah");
-            ImGui::EndTabItem();
+            if (ImGui::BeginTabItem( zfile_filename((*it).file, nullptr) ) )
+            {
+
+                editor.SetText(std::string((char *)zchunk_data((*it).data)));
+
+                editor.Render("TextEditor");
+                ImGui::EndTabItem();
+            }
         }
-        if (ImGui::BeginTabItem("Broccoli"))
+
+        /*if (ImGui::BeginTabItem("*new*"))
         {
-            ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+            ImGui::Text("Add new file");
             ImGui::EndTabItem();
-        }
-        if (ImGui::BeginTabItem("Cucumber"))
-        {
-            ImGui::Text("This is the Cucumber tab!\nblah blah blah blah blah");
-            ImGui::EndTabItem();
-        }
+        }*/
         ImGui::EndTabBar();
     }
-
-    editor.Render("TextEditor");
-
     ImGui::End();
 }
 

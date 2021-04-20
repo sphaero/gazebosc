@@ -13,6 +13,8 @@
 
 // actor file browser
 imgui_addons::ImGuiFileBrowser actor_file_dialog;
+// text editor forward
+bool OpenTextEditor(zfile_t *txtfile);
 
 /// A structure defining a connection between two slots of two actors.
 struct Connection
@@ -461,6 +463,22 @@ struct ActorContainer {
             strcpy(buf, actor_file_dialog.selected_path.c_str());
             //SendAPI<char*>(zapic, zapiv, zvalue, &(p) );
             sphactor_ask_api(this->actor, zconfig_value(zapic), zconfig_value(zapiv), p );
+        }
+        // TODO: handle options
+        if ( true )//zconfig_locate(data, "options") )
+        {
+            if ( ImGui::Button(ICON_FA_EDIT) )
+            {
+                zconfig_t * zvalue = zconfig_locate(data, "value");
+                const char* zvalueStr = zconfig_value(zvalue);
+                zfile_t *f = zfile_new(nullptr, zvalueStr);
+                if ( strlen(zvalueStr) && f )
+                {
+                    OpenTextEditor(f); // text editor now owns f
+                }
+                else
+                    zsys_error("no valid file to load: %s", zvalueStr);
+            }
         }
     }
 
