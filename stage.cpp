@@ -61,7 +61,9 @@ bool Load( const char* configFile );
 void Clear();
 ActorContainer* Find( const char* endpoint );
 
-bool showEditor = false;
+bool showEditor = true;
+bool showDemo = false;
+void ImGui::ShowDemoWindow(bool* p_open);
 
 void UpdateRegisteredActorsCache() {
     zlist_t* list = sphactor_get_registered();
@@ -163,7 +165,7 @@ void ShowColorTextEditor()
     editor.SetLanguageDefinition(lang);
 
     auto cpos = editor.GetCursorPosition();
-    ImGui::Begin("Text Editor Demo", nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
+    ImGui::Begin(fileToEdit, nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
     ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
     if (ImGui::BeginMenuBar())
     {
@@ -217,15 +219,36 @@ void ShowColorTextEditor()
                 editor.SetPalette(TextEditor::GetRetroBluePalette());
             ImGui::EndMenu();
         }
+        ImGui::TextDisabled("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
+            editor.IsOverwrite() ? "Ovr" : "Ins",
+            editor.CanUndo() ? "*" : " ",
+            editor.GetLanguageDefinition().mName.c_str(), fileToEdit);
+
         ImGui::EndMenuBar();
+    }
+    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+    if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+    {
+        if (ImGui::BeginTabItem("Avocado"))
+        {
+            ImGui::Text("This is the Avocado tab!\nblah blah blah blah blah");
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Broccoli"))
+        {
+            ImGui::Text("This is the Broccoli tab!\nblah blah blah blah blah");
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Cucumber"))
+        {
+            ImGui::Text("This is the Cucumber tab!\nblah blah blah blah blah");
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
     }
 
     editor.Render("TextEditor");
 
-    ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
-        editor.IsOverwrite() ? "Ovr" : "Ins",
-        editor.CanUndo() ? "*" : " ",
-        editor.GetLanguageDefinition().mName.c_str(), fileToEdit);
     ImGui::End();
 }
 
@@ -305,6 +328,9 @@ int RenderMenuBar( bool * showLog ) {
         }
         if ( ImGui::MenuItem(ICON_FA_EDIT " Toggle Text Editor") ) {
             showEditor = !(showEditor);
+        }
+        if ( ImGui::MenuItem(ICON_FA_EDIT " Toggle Demo") ) {
+            showDemo = !(showDemo);
         }
 
         ImGui::EndMenu();
@@ -512,6 +538,7 @@ int UpdateActors(float deltaTime, bool * showLog)
     ImGui::End();
 
     if (showEditor) ShowColorTextEditor();
+    if (showDemo) ImGui::ShowDemoWindow(&showDemo);
 
     return rc;
 }
