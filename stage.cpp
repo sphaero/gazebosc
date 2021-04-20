@@ -177,7 +177,7 @@ bool OpenTextEditor(zfile_t *txtfile)
     bool found = false;
     for(auto it = open_text_files.begin(); it != open_text_files.end(); ++it)
     {
-        if ( streq( zfile_filename((*it).file, NULL), zfile_filename((*it).file, NULL) ) )
+        if ( streq( zfile_filename((*it).file, NULL), zfile_filename(txtfile, NULL) ) )
         {
             found = true;
             break; // file already exists in the editor
