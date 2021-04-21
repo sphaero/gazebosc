@@ -32,7 +32,18 @@
 #include "ActorContainer.h"
 #include "actors.h"
 #include "ext/ImGui-Addons/FileBrowser/ImGuiFileBrowser.h"
+#include "ext/ImGuiColorTextEdit/TextEditor.h"
 
+// move this to something includable
+static char *
+s_basename(char const *path)
+{
+    const char *s = strrchr(path, '/');
+    if (!s)
+        return strdup(path);
+    else
+        return strdup(s + 1);
+}
 //enum for menu actions
 enum MenuAction
 {
@@ -59,10 +70,12 @@ std::string editingFile = "";
 std::string editingPath = "";
 
 // Text editor instance
-bool showEditor = true;
+bool showEditor = false;
 struct textfile {
     zfile_t *file;
-    zchunk_t *data;
+    TextEditor *editor;
+    char *basename;
+    bool open;
 };
 std::vector<textfile> open_text_files;
 
@@ -169,15 +182,13 @@ void ShowConfigWindow(bool * showLog) {
     ImGui::End();
 }
 
-#include "TextEditor.h"
-
 bool OpenTextEditor(zfile_t *txtfile)
 {
     assert(txtfile);
     bool found = false;
     for(auto it = open_text_files.begin(); it != open_text_files.end(); ++it)
     {
-        if ( streq( zfile_filename((*it).file, NULL), zfile_filename(txtfile, NULL) ) )
+        if ( streq( zfile_filename(it->file, NULL), zfile_filename(txtfile, nullptr) ) )
         {
             found = true;
             break; // file already exists in the editor
@@ -189,7 +200,13 @@ bool OpenTextEditor(zfile_t *txtfile)
         int rc = zfile_input(txtfile);
         assert(rc == 0);
         zchunk_t *data = zfile_read( txtfile, zfile_cursize(txtfile), 0 );
-        open_text_files.push_back( { txtfile, data } );
+        TextEditor *editor = new TextEditor();
+        auto lang = TextEditor::LanguageDefinition::CPlusPlus();
+        editor->SetLanguageDefinition(lang);
+        editor->SetText( (char *)zchunk_data(data) );
+        char *basename =  s_basename(zfile_filename(txtfile, nullptr));
+
+        open_text_files.push_back( { txtfile, editor, basename, true } );
     }
     //else
         // todo?
@@ -198,86 +215,99 @@ bool OpenTextEditor(zfile_t *txtfile)
 
 void ShowColorTextEditor()
 {
-    static TextEditor editor;
-    static auto lang = TextEditor::LanguageDefinition::CPlusPlus();
-    static const char* fileToEdit = "ImGuiColorTextEdit/TextEditor.cpp";
-    editor.SetLanguageDefinition(lang);
-
-    auto cpos = editor.GetCursorPosition();
-    ImGui::Begin(fileToEdit, nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
-    ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
-    if (ImGui::BeginMenuBar())
+    static TextEditor* current_editor = nullptr;
+    ImGui::Begin("Text Editor", &showEditor, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
+    //ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+    if ( ImGui::BeginMenuBar() )
     {
-        if (ImGui::BeginMenu("File"))
+        if ( current_editor == nullptr)
         {
-            if (ImGui::MenuItem("Save"))
-            {
-                auto textToSave = editor.GetText();
-                /// save text....
-            }
-            ImGui::EndMenu();
+            ImGui::TextDisabled( "No textfiles loaded!" );
         }
-        if (ImGui::BeginMenu("Edit"))
+        else
         {
-            bool ro = editor.IsReadOnly();
-            if (ImGui::MenuItem("Read-only mode", nullptr, &ro))
-                editor.SetReadOnly(ro);
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("Save"))
+                {
+                    auto textToSave = current_editor->GetText();
+                    /// save text....
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Edit"))
+            {
+                bool ro = current_editor->IsReadOnly();
+                if (ImGui::MenuItem("Read-only mode", nullptr, &ro))
+                    current_editor->SetReadOnly(ro);
+                    ImGui::Separator();
+
+                if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && current_editor->CanUndo()))
+                    current_editor->Undo();
+                if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !ro && current_editor->CanRedo()))
+                    current_editor->Redo();
+
                 ImGui::Separator();
 
-            if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && editor.CanUndo()))
-                editor.Undo();
-            if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !ro && editor.CanRedo()))
-                editor.Redo();
+                if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, current_editor->HasSelection()))
+                    current_editor->Copy();
+                if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, !ro && current_editor->HasSelection()))
+                    current_editor->Cut();
+                if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && current_editor->HasSelection()))
+                    current_editor->Delete();
+                if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr))
+                    current_editor->Paste();
 
-            ImGui::Separator();
+                ImGui::Separator();
 
-            if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, editor.HasSelection()))
-                editor.Copy();
-            if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, !ro && editor.HasSelection()))
-                editor.Cut();
-            if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && editor.HasSelection()))
-                editor.Delete();
-            if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr))
-                editor.Paste();
+                if (ImGui::MenuItem("Select all", nullptr, nullptr))
+                    current_editor->SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(current_editor->GetTotalLines(), 0));
 
-            ImGui::Separator();
+                ImGui::EndMenu();
+            }
 
-            if (ImGui::MenuItem("Select all", nullptr, nullptr))
-                editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
-
-            ImGui::EndMenu();
+            if (ImGui::BeginMenu("View"))
+            {
+                if (ImGui::MenuItem("Dark palette"))
+                    current_editor->SetPalette(TextEditor::GetDarkPalette());
+                if (ImGui::MenuItem("Light palette"))
+                    current_editor->SetPalette(TextEditor::GetLightPalette());
+                if (ImGui::MenuItem("Retro blue palette"))
+                    current_editor->SetPalette(TextEditor::GetRetroBluePalette());
+                ImGui::EndMenu();
+            }
+            auto cpos = current_editor->GetCursorPosition();
+            ImGui::TextDisabled("%6d/%-6d %6d lines  | %s | %s | %s | ", cpos.mLine + 1, cpos.mColumn + 1, current_editor->GetTotalLines(),
+                current_editor->IsOverwrite() ? "Ovr" : "Ins",
+                current_editor->CanUndo() ? "*" : " ",
+                current_editor->GetLanguageDefinition().mName.c_str());
         }
-
-        if (ImGui::BeginMenu("View"))
-        {
-            if (ImGui::MenuItem("Dark palette"))
-                editor.SetPalette(TextEditor::GetDarkPalette());
-            if (ImGui::MenuItem("Light palette"))
-                editor.SetPalette(TextEditor::GetLightPalette());
-            if (ImGui::MenuItem("Retro blue palette"))
-                editor.SetPalette(TextEditor::GetRetroBluePalette());
-            ImGui::EndMenu();
-        }
-        ImGui::TextDisabled("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
-            editor.IsOverwrite() ? "Ovr" : "Ins",
-            editor.CanUndo() ? "*" : " ",
-            editor.GetLanguageDefinition().mName.c_str(), fileToEdit);
-
         ImGui::EndMenuBar();
     }
-    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 
-    if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_AutoSelectNewTabs;//ImGuiTabBarFlags_None;
+    if (ImGui::BeginTabBar("TextEditorTabBar", tab_bar_flags))
     {
         for(auto it = open_text_files.begin(); it != open_text_files.end(); ++it)
         {
-            if (ImGui::BeginTabItem( zfile_filename((*it).file, nullptr) ) )
+            if (&it->open && ImGui::BeginTabItem( it->basename,  &it->open, ImGuiTabItemFlags_None) )
             {
-
-                editor.SetText(std::string((char *)zchunk_data((*it).data)));
-
-                editor.Render("TextEditor");
+                if ( current_editor != it->editor )
+                {
+                    current_editor = it->editor; // set current editor from active tab
+                }
+                current_editor->Render( it->basename );
                 ImGui::EndTabItem();
+            }
+            else if ( ! it->open )
+            {
+                // file is closed by gui do we need to save it?
+                // this doesn't work, mTextChanged is set to false when rendered
+                /*if ( it->editor->IsTextChanged() )
+                {
+                    zsys_debug("need to save file %s", it->basename );
+                }*/
+                zsys_debug("remove file %s", it->basename );
             }
         }
 
