@@ -215,7 +215,12 @@ bool OpenTextEditor(zfile_t *txtfile)
 
 void ShowColorTextEditor()
 {
+    static textfile* current_textfile = nullptr;
     static TextEditor* current_editor = nullptr;
+    if ( current_textfile)
+    {
+        current_editor = current_textfile->editor;
+    }
     ImGui::Begin("Text Editor", &showEditor, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
     //ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
     if ( ImGui::BeginMenuBar() )
@@ -226,12 +231,19 @@ void ShowColorTextEditor()
         }
         else
         {
-            if (ImGui::BeginMenu("File"))
+            if (ImGui::BeginMenu("File") && current_editor)
             {
                 if (ImGui::MenuItem("Save"))
                 {
-                    auto textToSave = current_editor->GetText();
-                    /// save text....
+                    std::string textToSave = current_editor->GetText();
+                    zfile_t* file_to_write = current_textfile->file;
+                    zchunk_t* data = zchunk_new(textToSave.c_str(), textToSave.size() );
+                    assert(data);
+                    int rc = zfile_output(file_to_write);
+                    assert(rc == 0);
+                    rc = zfile_write(file_to_write, data, 0);
+                    assert(rc == 0);
+                    zfile_close(file_to_write);
                 }
                 ImGui::EndMenu();
             }
@@ -294,6 +306,7 @@ void ShowColorTextEditor()
             {
                 if ( current_editor != it->editor )
                 {
+                    current_textfile = &(*it); // set current textfile from active tab
                     current_editor = it->editor; // set current editor from active tab
                 }
                 current_editor->Render( it->basename );
