@@ -22,3 +22,7 @@
 [submodule "ext/rtmidi"]
 	path = ext/rtmidi
 	url = https://github.com/thestk/rtmidi
+[submodule "ext/pybind11"]
+	path = ext/pybind11
+	url = https://github.com/pybind/pybind11
+	branch = stable

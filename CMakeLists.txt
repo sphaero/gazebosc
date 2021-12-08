@@ -73,6 +73,7 @@ set(czmq_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/ext/czmq/include/)
 add_subdirectory("ext/libsphactor" EXCLUDE_FROM_ALL)
 add_subdirectory("ext/SDL-mirror" EXCLUDE_FROM_ALL)
 add_subdirectory("ext/glm" EXCLUDE_FROM_ALL)
+add_subdirectory("ext/pybind11" EXCLUDE_FROM_ALL)
 set( RTMIDI_TARGETNAME_UNINSTALL "rtmidi_uninstall" CACHE STRING "Name of 'uninstall' build target")
 set( RTMIDI_BUILD_SHARED_LIBS "")
 set( RTMIDI_BUILD_STATIC_LIBS "#" )
@@ -167,6 +168,7 @@ if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
         endif()
     endif ()
 endif ()
+add_definitions("-DImTextureID=int")
 
 ### PROJECT SOURCES
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Actors ACTOR_SOURCES)
@@ -201,6 +203,7 @@ list(APPEND GZB_SOURCES
     ImNodesEz.cpp
     ext/ImGui-Addons/FileBrowser/ImGuiFileBrowser.cpp
     stage.cpp
+    deargui.cpp
 )
 
 list(APPEND GZB_INCLUDEDIRS
@@ -211,6 +214,7 @@ list(APPEND GZB_INCLUDEDIRS
     ${Python3_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}/imgui-${DEP_IMGUI_VERSION}
     ${CMAKE_CURRENT_BINARY_DIR}/imgui-${DEP_IMGUI_VERSION}/backends
+    ${pybind11_INCLUDE_DIR}
 )
 
 if(WIN32)
