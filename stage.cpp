@@ -379,6 +379,24 @@ void ShowTextEditor()
     ImGui::End();
 }
 
+void ShowPythonUI()
+{
+    PyObject *obj = nullptr;
+    FILE *file = nullptr;
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+    if (obj == nullptr)
+    {
+        obj = Py_BuildValue("s", "test.py");
+        file = _Py_fopen_obj(obj, "r+");
+    }
+    if(file != NULL) {
+        int rc = PyRun_SimpleFileEx(file, "test.py", 1);
+        //assert(rc == 0);
+    }
+    PyGILState_Release(gstate);
+}
+
 int RenderMenuBar( bool * showLog ) {
     static char* configFile = new char[64] { 0x0 };
     static int keyFocus = 0;
@@ -689,6 +707,8 @@ int UpdateActors(float deltaTime, bool * showLog)
         ImNodes::EndCanvas();
     }
     ImGui::End();
+
+    ShowPythonUI();
 
     if (txteditor_open) ShowTextEditor();
 #ifdef HAVE_IMGUI_DEMO
