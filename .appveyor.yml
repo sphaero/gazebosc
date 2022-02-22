@@ -20,9 +20,11 @@ environment:
     - platform: x64
       configuration: Debug
       PY_DIR: C:/Python38-x64
+      CMAKE_FLAGS:
     - platform: x64
       configuration: Release
       PY_DIR: C:/Python38-x64
+      CMAKE_FLAGS: "-DCMAKE_CXX_FLAGS_RELEASE=/Zi -DCMAKE_SHARED_LINKER_FLAGS_RELEASE=/DEBUG /OPT:REF /OPT:ICF"
 
 matrix:
   fast_finish: false
@@ -70,7 +72,7 @@ build_script:
       cd "%APPVEYOR_BUILD_FOLDER%"
       git submodule update --init --recursive
       cd "%GZB_BUILDDIR%"
-      cmake .. -Ax64 -DCMAKE_PREFIX_PATH="%INSTALL_PREFIX%" -DPython3_ROOT_DIR="%PY_INSTALLDIR%" -DWITH_EMBED_PYTHON=ON -DWITH_DEV=OFF
+      cmake .. -Ax64 -DCMAKE_PREFIX_PATH="%INSTALL_PREFIX%" -DPython3_ROOT_DIR="%PY_INSTALLDIR%" -DWITH_EMBED_PYTHON=ON -DWITH_DEV=OFF %CMAKE_FLAGS%
   - cmake --build . --config %Configuration%
 #      ctest -C %Configuration% -V
 after_build:
