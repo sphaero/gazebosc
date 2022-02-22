@@ -24,7 +24,7 @@ environment:
     - platform: x64
       configuration: Release
       PY_DIR: C:/Python38-x64
-      CMAKE_FLAGS: "-DCMAKE_CXX_FLAGS_RELEASE=/Zi -DCMAKE_SHARED_LINKER_FLAGS_RELEASE=/DEBUG /OPT:REF /OPT:ICF"
+      CMAKE_FLAGS: "-DCMAKE_CXX_FLAGS_RELEASE=/Zi -DCMAKE_SHARED_LINKER_FLAGS_RELEASE=\"/DEBUG /OPT:REF /OPT:ICF\""
 
 matrix:
   fast_finish: false
