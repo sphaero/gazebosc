@@ -23,7 +23,7 @@ jobs:
           - os: ubuntu-latest
           - os: macos-10.15
           - os: windows-latest
-            INSTALL_PREFIX: C:/tmp/ci_build
+            INSTALL_PREFIX: %GITHUB_WORKSPACE%\..\tmp
             BUILD_TYPE: RelWithDebInfo
             CONFIGURATION: Release
 
@@ -64,7 +64,8 @@ jobs:
     - name: libZMQ Dep Win
       if: matrix.os == 'windows-latest'
       run: |
-        set LIBZMQ_SOURCEDIR=C:\projects\libzmq
+        md ${{ matrix.INSTALL_PREFIX }}
+        set LIBZMQ_SOURCEDIR=${{github.workspace}}\libzmq
         set LIBZMQ_BUILDDIR=%LIBZMQ_SOURCEDIR%\build
         git clone --depth 1 --quiet https://github.com/zeromq/libzmq.git "%LIBZMQ_SOURCEDIR%"
         md "%LIBZMQ_BUILDDIR%"
