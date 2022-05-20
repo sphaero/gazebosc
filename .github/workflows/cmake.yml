@@ -85,14 +85,14 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
-        set PYTHON_SOURCEDIR=C:\tmp\cpython
+        set PYTHON_SOURCEDIR=${{github.workspace}}\..\cpython
         git clone https://github.com/python/cpython.git --branch=3.8 --depth=1 "%PYTHON_SOURCEDIR%"
         set GZB_BUILDDIR=${{env.GITHUB_WORKSPACE}}/build
         set PY_INSTALLDIR=%GZB_BUILDDIR%/python
         set PY_EXE=python.exe
         set PY_LAYOUTOPTS=--include-dev --include-pip
-        md "%PY_INSTALLDIR%"
-        cd "%PYTHON_SOURCEDIR%"\PCbuild
+        md %PY_INSTALLDIR%
+        cd %PYTHON_SOURCEDIR%\PCbuild
         build.bat -p x64
         IF "%Configuration%" == "Debug" build.bat -p x64 -c Debug
         cd amd64
