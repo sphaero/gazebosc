@@ -2,7 +2,6 @@ name: CMake
 
 on:
   push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -23,12 +22,17 @@ jobs:
         include:
           - os: ubuntu-latest
           - os: macos-10.15
+          - os: windows-latest
+            INSTALL_PREFIX: C:/tmp/ci_build
+            BUILD_TYPE: RelWithDebInfo
+            CONFIGURATION: Release
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: true
 
+# dependencies
     - name: add Debian Packages
       if: matrix.os == 'ubuntu-latest'
       uses: myci-actions/add-deb-repo@10
@@ -43,6 +47,10 @@ jobs:
       shell: bash
       run: brew install automake autoconf cmake
 
+    - name: Add MSBuild to PATH
+      if: matrix.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v1.0.2
+
     - name: libZMQ Dep
       if: matrix.os == 'macos-10.15'
       run: |
@@ -53,12 +61,42 @@ jobs:
         make
         sudo make install
 
+    - name: libZMQ Dep Win
+      if: matrix.os == 'windows-latest'
+      run: |
+        set LIBZMQ_SOURCEDIR=C:\projects\libzmq
+        set LIBZMQ_BUILDDIR=%LIBZMQ_SOURCEDIR%\build
+        git clone --depth 1 --quiet https://github.com/zeromq/libzmq.git "%LIBZMQ_SOURCEDIR%"
+        md "%LIBZMQ_BUILDDIR%"
+        cd "%LIBZMQ_BUILDDIR%"
+        cmake .. -Ax64 -DBUILD_STATIC=OFF -DBUILD_SHARED=ON -DZMQ_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX="${{ matrix.INSTALL_PREFIX }}"
+        cmake --build . --config ${{ matrix.BUILD_TYPE }} --target install
+
     - name: Python dep
       if: matrix.os == 'macos-10.15'
       run: |
         ./dist/osx/build_python.sh ${{github.workspace}}/build/python
         PY_ROOT=`${{github.workspace}}/build/python/Python.framework/Versions/Current/bin/python3 -c "import sys;print(sys.base_prefix)"`
         echo "CMAKE_OPTIONS=-DPython3_ROOT_DIR=$PY_ROOT -DWITH_EMBED_PYTHON=ON -DWITH_OPENVR=OFF -DWITH_DEV=OFF" >> $GITHUB_ENV
+
+    - name: Python dep Win
+      if: matrix.os == 'windows-latest'
+      run: |
+        set PYTHON_SOURCEDIR=C:\tmp\cpython
+        git clone https://github.com/python/cpython.git --branch=3.8 --depth=1 "%PYTHON_SOURCEDIR%"
+        set GZB_BUILDDIR=${{env.GITHUB_WORKSPACE}}/build
+        set PY_INSTALLDIR=%GZB_BUILDDIR%/python
+        set PY_EXE=python.exe
+        set PY_LAYOUTOPTS=--include-dev --include-pip
+        md "%PY_INSTALLDIR%"
+        cd "%PYTHON_SOURCEDIR%"\PCbuild
+        build.bat -p x64
+        IF "%Configuration%" == "Debug" build.bat -p x64 -c Debug
+        cd amd64
+        .\%PY_EXE% ../../PC/layout -b . -s %PYTHON_SOURCEDIR% %PY_LAYOUTOPTS% --copy %PY_INSTALLDIR%
+        IF "%Configuration%" == "Debug" set PY_LAYOUTOPTS=-d --include-dev --include-pip --include-symbols
+        IF "%Configuration%" == "Debug" .\%PY_EXE% ../../PC/layout -b . -s %PYTHON_SOURCEDIR% %PY_LAYOUTOPTS% --copy %PY_INSTALLDIR%
+        set CMAKE_OPTIONS=-Ax64 -DCMAKE_PREFIX_PATH="%INSTALL_PREFIX%" -DPython3_ROOT_DIR="%PY_INSTALLDIR%" -DWITH_EMBED_PYTHON=ON -DWITH_DEV=OFF
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
