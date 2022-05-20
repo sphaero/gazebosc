@@ -23,7 +23,7 @@ jobs:
           - os: ubuntu-latest
           - os: macos-10.15
           - os: windows-latest
-            INSTALL_PREFIX: %TMP%\inst
+            INSTALL_PREFIX: "%TMP%\inst"
             BUILD_TYPE: RelWithDebInfo
             CONFIGURATION: Release
 
