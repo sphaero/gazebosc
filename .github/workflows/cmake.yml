@@ -62,6 +62,7 @@ jobs:
 
     - name: libZMQ Dep Win
       if: matrix.os == 'windows-latest'
+      shell: cmd
       run: |
         set INSTALL_PREFIX=${{github.workspace}}\inst
         md %INSTALL_PREFIX%
@@ -82,6 +83,7 @@ jobs:
 
     - name: Python dep Win
       if: matrix.os == 'windows-latest'
+      shell: cmd
       run: |
         set PYTHON_SOURCEDIR=C:\tmp\cpython
         git clone https://github.com/python/cpython.git --branch=3.8 --depth=1 "%PYTHON_SOURCEDIR%"
