@@ -70,7 +70,7 @@ jobs:
         git clone --depth 1 --quiet https://github.com/zeromq/libzmq.git "%LIBZMQ_SOURCEDIR%"
         md %LIBZMQ_BUILDDIR%
         cd %LIBZMQ_BUILDDIR%
-        cmake .. -Ax64 -DBUILD_STATIC=OFF -DBUILD_SHARED=ON -DZMQ_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=%INSTALL_PREFIX%"
+        cmake .. -Ax64 -DBUILD_STATIC=OFF -DBUILD_SHARED=ON -DZMQ_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=%INSTALL_PREFIX%
         cmake --build . --config ${{ matrix.BUILD_TYPE }} --target install
 
     - name: Python dep
