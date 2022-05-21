@@ -46,6 +46,10 @@ jobs:
       shell: bash
       run: brew install automake autoconf cmake
 
+    - name: vs2015
+      if: matrix.os == 'windows-latest'
+      run: choco install microsoft-visual-cpp-build-tools
+
     - name: Add MSBuild to PATH
       if: matrix.os == 'windows-latest'
       uses: microsoft/setup-msbuild@v1.0.2
