@@ -47,7 +47,7 @@ jobs:
       run: brew install automake autoconf cmake
 
     - name: Add MSBuild to PATH
-      if: matrix.os == 'windows-latest'
+      if: matrix.os == 'windows-2019'
       uses: microsoft/setup-msbuild@v1.0.2
 
     - name: libZMQ Dep
@@ -61,7 +61,7 @@ jobs:
         sudo make install
 
     - name: libZMQ Dep Win
-      if: matrix.os == 'windows-latest'
+      if: matrix.os == 'windows-2019'
       shell: cmd
       run: |
         set INSTALL_PREFIX=${{github.workspace}}\inst
@@ -82,7 +82,7 @@ jobs:
         echo "CMAKE_OPTIONS=-DPython3_ROOT_DIR=$PY_ROOT -DWITH_EMBED_PYTHON=ON -DWITH_OPENVR=OFF -DWITH_DEV=OFF" >> $GITHUB_ENV
 
     - name: Python dep Win
-      if: matrix.os == 'windows-latest'
+      if: matrix.os == 'windows-2019'
       shell: cmd
       run: |
         set PYTHON_SOURCEDIR=${{github.workspace}}\..\cpython
