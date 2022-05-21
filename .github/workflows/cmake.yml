@@ -101,9 +101,10 @@ jobs:
         IF "%Configuration%" == "Debug" .\%PY_EXE% ../../PC/layout -b . -s %PYTHON_SOURCEDIR% %PY_LAYOUTOPTS% --copy %PY_INSTALLDIR%
         set CMAKE_OPTIONS=-Ax64 -DCMAKE_PREFIX_PATH="%INSTALL_PREFIX%" -DPython3_ROOT_DIR="%PY_INSTALLDIR%" -DWITH_EMBED_PYTHON=ON -DWITH_DEV=OFF
 
-    - name: Configure CMake
+    - name: Configure CMake Posix
       if: contains(matrix.os, 'macos') || contains(matrix.os, 'ubuntu')
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} $CMAKE_OPTIONS
+    - name: Configure CMake Win
       if: contains(matrix.os, 'windows')
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} %CMAKE_OPTIONS%
 
