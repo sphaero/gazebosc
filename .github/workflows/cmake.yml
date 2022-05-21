@@ -108,6 +108,7 @@ jobs:
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} $CMAKE_OPTIONS
     - name: Configure CMake Win
       if: contains(matrix.os, 'windows')
+      shell: cmd
       run: |
         set
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} %CMAKE_OPTIONS%
