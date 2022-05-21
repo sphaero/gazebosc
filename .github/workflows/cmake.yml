@@ -22,7 +22,7 @@ jobs:
         include:
           - os: ubuntu-latest
           - os: macos-10.15
-          - os: windows-latest
+          - os: windows-2019
             BUILD_TYPE: RelWithDebInfo
             CONFIGURATION: Release
 
@@ -46,9 +46,9 @@ jobs:
       shell: bash
       run: brew install automake autoconf cmake
 
-#    - name: Add MSBuild to PATH
-#      if: matrix.os == 'windows-latest'
-#      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Add MSBuild to PATH
+      if: matrix.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v1.0.2
 
     - name: libZMQ Dep
       if: matrix.os == 'macos-10.15'
