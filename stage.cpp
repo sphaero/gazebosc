@@ -260,6 +260,9 @@ void RegisterActors() {
     PyGILState_Release(gstate);
     /* End check newer version */
 #endif
+#ifdef GSTREAMER_FOUND
+    sphactor_register("Gstreamer", &gstreameractor_handler, zconfig_str_load(gstreameractorcapabilities), &gstreameractor_new_helper, NULL);
+#endif
     //enforcable maximum actor counts
     max_actors_by_type.insert(std::make_pair("NatNet", 1));
     max_actors_by_type.insert(std::make_pair("OpenVR", 1));

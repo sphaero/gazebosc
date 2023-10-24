@@ -16,5 +16,9 @@
 #ifdef PYTHON3_FOUND
 #include "Actors/pythonactor.h"
 #endif
+#ifdef GSTREAMER_FOUND
+#include "Actors/pythonactor.h"
+#include "Actors/gstreameractor.h"
+#endif
 
 #endif

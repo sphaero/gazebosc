@@ -122,6 +122,15 @@ else()
     message (FATAL_ERROR "Cannot find Python3, make sure the development packages of Python are available on the system. ROOT_DIR=${Python3_ROOT_DIR}")
 endif()
 
+find_package(PkgConfig QUIET)
+pkg_check_modules(GSTREAMER gstreamer-1.0)
+if (GSTREAMER_FOUND)
+    message (WARNING ${GSTREAMER_INCLUDE_DIRS})
+    add_definitions(-DGSTREAMER_FOUND)
+else(GSTREAMER_FOUND)
+    message (WARNING "Not found ${GSTREAMER_INCLUDE_DIRS}")
+endif()
+
 if (WITH_UNWIND)
     find_package (Unwind)
 endif (WITH_UNWIND)
@@ -207,6 +216,7 @@ list(APPEND GZB_INCLUDEDIRS
     ${OPENVR_INCLUDE_DIR}
     ${libzmq_INCLUDE_DIRS}
     ${Python3_INCLUDE_DIRS}
+    ${GSTREAMER_INCLUDE_DIRS}
     ext/ImGuiColorTextEdit
     ext/imgui
     ext/imgui/backends
@@ -338,6 +348,7 @@ elseif (RPI4)
         rtmidi
         ${OPENVR_LIBRARIES}
         ${Python3_LIBRARIES}
+        ${GSTREAMER_LIBRARIES}
         -lasound -ldl -lGLESv2)
     target_compile_options(gazebosc PUBLIC -D__LINUX_ALSA__ )
 else()
@@ -348,6 +359,7 @@ else()
         rtmidi
         ${OPENVR_LIBRARIES}
         ${Python3_LIBRARIES}
+        ${GSTREAMER_LIBRARIES}
         -lasound -ldl -lGL -lGLEW)
     target_compile_options(gazebosc PUBLIC -D__LINUX_ALSA__ )
 endif()
