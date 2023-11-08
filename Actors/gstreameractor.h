@@ -22,6 +22,10 @@ struct _gstreameractor_t
 
     //GMainLoop *main_loop;  /* GLib's Main Loop */
     GMainContext *main_context; /* Glib's Main context */
+
+    bool playing;           /* are we playing a video? */
+    bool loopplay;          /* should we loop current stream? */
+    bool autoplay;          /* should we play when started? */
 };
 
 typedef struct _gstreameractor_t gstreameractor_t;
@@ -30,12 +34,21 @@ static const char *gstreameractorcapabilities =
     "capabilities\n"
     "    data\n"
     "        name = \"URL\"\n"
-    "        type = \"URL\"\n"
-    "        options = \"\"\n"            // c = create file,  t = textfile, e = editable
+    "        type = \"string\"\n"
     "        help = \"Load a video from url\"\n"
     "        value = \"\"\n"
-    "        api_call = \"SET FILE\"\n"
+    "        api_call = \"SET URL\"\n"
     "        api_value = \"s\"\n"           // optional picture format used in zsock_send
+    "    data\n"
+    "        name = \"playback\"\n"
+    "        type = \"mediacontrol\"\n"
+    "    data\n"
+    "        name = \"loop\"\n"
+    "        type = \"bool\"\n"
+    "        help = \"Loop the stream\"\n"
+    "        value = \"False\"\n"
+    "        api_call = \"SET LOOPPLAY\"\n"
+    "        api_value = \"s\"\n"
     "inputs\n"
     "    input\n"
     "        type = \"OSC\"\n"
