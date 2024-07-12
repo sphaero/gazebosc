@@ -82,7 +82,7 @@ jobs:
       shell: cmd
       working-directory: build_libzmq
       run: |
-        cmake -D WITH_LIBSODIUM="OFF" -D ENABLE_DRAFTS="ON" -G "%CMAKE_GENERATOR%" "%LIBZMQ_SRCDIR%"
+        cmake -D WITH_LIBSODIUM="OFF" -D ENABLE_DRAFTS="ON" -G "%CMAKE_GENERATOR%" ${{ github.workspace }}/libzmq
         cmake --build . --config release --target install -- -verbosity:Minimal -maxcpucount
 
 #    - name: Cache CPython Build
