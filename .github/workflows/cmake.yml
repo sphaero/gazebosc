@@ -44,10 +44,10 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
       if: matrix.os == 'windows-2019'
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v1
       with:
-        submodules: true
-        fetch-depth: 0
+        submodules: recursive
+#        fetch-depth: 0
     - name: add Debian Packages
       if: matrix.os == 'ubuntu-latest'
       uses: myci-actions/add-deb-repo@10
