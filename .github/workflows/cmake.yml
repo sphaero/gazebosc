@@ -44,10 +44,11 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
       if: matrix.os == 'windows-2019'
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
-        submodules: recursive
-#        fetch-depth: 0
+        submodules: true
+    - name: fix git
+      run: git fetch --all --tags
     - name: add Debian Packages
       if: matrix.os == 'ubuntu-latest'
       uses: myci-actions/add-deb-repo@10
@@ -136,7 +137,6 @@ jobs:
       env:
         BBPWD: ${{ secrets.BBPWD }}
       run: |
-        git fetch --all --tags
         if [ "${RUNNER_OS}" == "Linux" ]; then zip -q -r $( echo $GITHUB_REPOSITORY | cut -d"/" -f2)_${RUNNER_OS}_$( git describe --tag --always --dirty --abbrev=4).zip * -x "*/test/*" "*/__pycache__/*"; fi
         echo 'pong.hku.nl,37.97.171.71 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBFxUlmYnS6gItSE4QuXpJxVFqhatyadmYaSQ+GPYwna9bs3KoWxfYl2j0ijA4aVAPPZLjLAjNbxd26fIrocW5fQ=' >> ./known_hosts
         git clone https://github.com/clarkwang/passh.git
