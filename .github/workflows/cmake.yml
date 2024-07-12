@@ -29,12 +29,24 @@ jobs:
               BUILD_TYPE: Debug
               MACOSX_DEPLOYMENT_TARGET: 10.15
               CMAKE_GENERATOR: Xcode
+          - os: windows-2019
+            env:
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              CMAKE_GENERATOR: Visual Studio 16 2019
+              MSVCVERSION: v142
+              MSVCYEAR: vs2019
+              ARTIFACT_NAME: v142-x64
+              ENABLE_DRAFTS: ON
+              LIBZMQ_SRCDIR: ${{ github.workspace }}\libzmq
 
     steps:
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+      if: matrix.os == 'windows-2019'
     - uses: actions/checkout@v2
       with:
         submodules: true
-
     - name: add Debian Packages
       if: matrix.os == 'ubuntu-latest'
       uses: myci-actions/add-deb-repo@10
@@ -49,32 +61,50 @@ jobs:
       shell: bash
       run: brew install automake libmicrohttpd
 
+# libzmq
+    - uses: actions/checkout@v2
+      with:
+        path: libzmq
     - name: libZMQ Dep
       if: ${{ contains( matrix.os, 'macos' ) }}
+      working-directory: libzmq
       run: |
-        git clone https://github.com/zeromq/libzmq.git
-        cd libzmq
         ./autogen.sh
         ./configure
         make
         sudo make install
-
-    - name: Cache CPython Build
-      id: cpython-build-cache
-      uses: actions/cache@v3
-      with:
-        path: ${{github.workspace}}/build/python
-        key: ${{ runner.os }}-${{ hashFiles('dist/osx/build_python.sh') }}
-
-    - name: Build Python dep
-      if: ${{ matrix.os != 'ubuntu-latest' && steps.cpython-build-cache.outputs.cache-hit != 'true' }}
+    - run: md build_libzmq
+      shell: cmd
+      if: matrix.os == 'windows-2019'
+    - name: libzmq build win
+      if: matrix.os == 'windows-2019'
+      shell: cmd
+      working-directory: build_libzmq
       run: |
-        ./dist/osx/build_python.sh ${{github.workspace}}/build/python
+        cmake -D WITH_LIBSODIUM="OFF" -D ENABLE_DRAFTS="ON" -G "%CMAKE_GENERATOR%" "%LIBZMQ_SRCDIR%"
+        cmake --build . --config release --target install -- -verbosity:Minimal -maxcpucount
+
+#    - name: Cache CPython Build
+#      id: cpython-build-cache
+#      uses: actions/cache@v3
+#      with:
+#        path: ${{github.workspace}}/build/python
+#        key: ${{ runner.os }}-${{ hashFiles('dist/osx/build_python.sh') }}
+
+#    - name: Build Python dep
+#      if: ${{ matrix.os != 'ubuntu-latest' && steps.cpython-build-cache.outputs.cache-hit != 'true' }}
+#      run: |
+#        ./dist/osx/build_python.sh ${{github.workspace}}/build/python
+
+    - uses: actions/setup-python@v5
+      #if: matrix.os == 'windows-2019'
+      with:
+        python-version: '3.9'
 
     - name: Extract Python Info
       if: ${{ matrix.os != 'ubuntu-latest' }}
       run: |
-        PY_ROOT=`${{github.workspace}}/build/python/bin/python3 -c "import sys, os;print(os.path.abspath(sys.base_prefix))"`
+        PY_ROOT=`python3 -c "import sys, os;print(os.path.abspath(sys.base_prefix))"`
         echo "CMAKE_OPTIONS=-DPython3_ROOT_DIR=$PY_ROOT -DWITH_EMBED_PYTHON=ON -DWITH_OPENVR=OFF -DWITH_DEV=OFF" >> $GITHUB_ENV
 
     - name: Configure CMake
