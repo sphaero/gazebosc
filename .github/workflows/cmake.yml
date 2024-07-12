@@ -65,7 +65,9 @@ jobs:
 # libzmq
     - uses: actions/checkout@v2
       with:
+        repository: zeromq/libzmq
         path: libzmq
+        submodules: true
     - name: libZMQ Dep
       if: ${{ contains( matrix.os, 'macos' ) }}
       working-directory: libzmq
